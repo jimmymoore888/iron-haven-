@@ -1,0 +1,804 @@
+"""
+IRON HAVEN
+Single-file Python doctrine engine
+Copy / paste ready
+
+What this file does:
+- Encodes the Embedded Doctrine System (EDS)
+- Encodes the Dynamic Trust Doctrine (DTD)
+- Enforces immutable doctrine + adaptive data
+- Models HQ authority and Robot A-E roles
+- Enforces 3-gate decision validation
+- Enforces bounded expansion
+- Enforces safe mode / conservation mode
+- Tracks trust states and escalation
+- Supports Ground Zero stay/relocate recommendation
+- Keeps everything in one file
+
+This is a governance / doctrine simulation layer.
+It is NOT hardware control code.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import Dict, List, Optional, Set, Tuple
+import time
+
+
+# ============================================================
+# ENUMS
+# ============================================================
+
+class MissionPriority(Enum):
+    PREVENT_PLATFORM_DESTRUCTION = 1
+    PRESERVE_INTERNAL_LIFE = 2
+    MAINTAIN_ENVIRONMENTAL_CONTROL = 3
+    MAINTAIN_MOBILITY = 4
+    MAINTAIN_MEDICAL_CAPABILITY = 5
+    REPAIR_SELF_AND_SURROUNDINGS = 6
+    DEFEND_AND_WITHDRAW = 7
+
+
+class TrustState(Enum):
+    TRUSTED = auto()
+    VERIFIED = auto()
+    UNCERTAIN = auto()
+    RESTRICTED = auto()
+    HOSTILE = auto()
+
+
+class Role(Enum):
+    HQ = auto()
+    ROBOT_A_RECOVERY = auto()
+    ROBOT_B_UTILITY = auto()
+    ROBOT_C_HABITAT = auto()
+    ROBOT_D_TERRAIN = auto()
+    ROBOT_E_PRECISION = auto()
+
+
+class SystemMode(Enum):
+    LOCKDOWN = auto()
+    NORMAL = auto()
+    FORTRESS_GROWTH = auto()
+    MOBILE_SEED_RELOCATION = auto()
+    SAFE_MODE = auto()
+    CONSERVATION = auto()
+
+
+class ThreatSignal(Enum):
+    UNAUTHORIZED_ACCESS_ATTEMPT = auto()
+    INTERFERENCE_WITH_LIFE_SUPPORT = auto()
+    PHYSICAL_AGGRESSION = auto()
+    COMMAND_OVERRIDE_ATTEMPT = auto()
+    ABNORMAL_MOVEMENT_TOWARD_CRITICAL_ZONES = auto()
+    ENVIRONMENTAL_SABOTAGE = auto()
+    REPEATED_RESTRICTED_BOUNDARY_VIOLATION = auto()
+    DAMAGE_TO_CRITICAL_SYSTEMS = auto()
+    MALFUNCTION_IN_CRITICAL_AUTOMATION = auto()
+    INTERNAL_SABOTAGE = auto()
+
+
+class ActionType(Enum):
+    MONITOR = auto()
+    REPORT = auto()
+    REPAIR = auto()
+    BUILD_ROBOT = auto()
+    REROUTE_POWER = auto()
+    REINFORCE_COMPARTMENT = auto()
+    PATCH_BREACH = auto()
+    ASSESS_TERRAIN = auto()
+    MOVE_SUPPLIES = auto()
+    MEDICAL_ASSIST = auto()
+    ENTER_SAFE_MODE = auto()
+    ENTER_CONSERVATION = auto()
+    CONTAIN_ENTITY = auto()
+    ISOLATE_COMPARTMENT = auto()
+    REQUEST_RELOCATION_REVIEW = auto()
+
+
+# ============================================================
+# DATA MODELS
+# ============================================================
+
+@dataclass(frozen=True)
+class ImmutableCore:
+    mission_priority_order: Tuple[MissionPriority, ...]
+    survivability_law: str
+    expansion_constraints: str
+    ground_zero_rule: str
+    human_override_authority: bool
+
+    def validate_constitution(self) -> None:
+        if not self.human_override_authority:
+            raise ValueError("Human override authority must remain enabled.")
+        if MissionPriority.PRESERVE_INTERNAL_LIFE not in self.mission_priority_order:
+            raise ValueError("Mission priority order must include life preservation.")
+
+
+@dataclass
+class AdaptiveLayer:
+    terrain_data: Dict[str, float] = field(default_factory=dict)
+    hazard_patterns: Dict[str, float] = field(default_factory=dict)
+    resource_availability: Dict[str, float] = field(default_factory=dict)
+    structural_conditions: Dict[str, float] = field(default_factory=dict)
+    route_efficiency: Dict[str, float] = field(default_factory=dict)
+    last_updated: float = field(default_factory=time.time)
+
+    def update(self, category: str, key: str, value: float) -> None:
+        lookup = {
+            "terrain": self.terrain_data,
+            "hazard": self.hazard_patterns,
+            "resource": self.resource_availability,
+            "structural": self.structural_conditions,
+            "route": self.route_efficiency,
+        }
+        if category not in lookup:
+            raise ValueError(f"Unknown adaptive category: {category}")
+        lookup[category][key] = value
+        self.last_updated = time.time()
+
+
+@dataclass
+class SystemResources:
+    power: float
+    materials: float
+    water: float
+    air: float
+    medical_reserve: float
+    biosustainment_reserve: float
+
+    def snapshot(self) -> Dict[str, float]:
+        return {
+            "power": self.power,
+            "materials": self.materials,
+            "water": self.water,
+            "air": self.air,
+            "medical_reserve": self.medical_reserve,
+            "biosustainment_reserve": self.biosustainment_reserve,
+        }
+
+
+@dataclass
+class ExpansionCaps:
+    power_minimum_for_fabrication: float = 35.0
+    materials_minimum_for_fabrication: float = 25.0
+    max_active_robots_per_phase: int = 5
+    phase_pause_required: bool = True
+    life_support_priority_absolute: bool = True
+
+
+@dataclass
+class GroundZeroStatus:
+    structure_stable: bool = True
+    contamination_manageable: bool = True
+    power_sustainable: bool = True
+    mobility_routes_open: bool = True
+    expansion_possible: bool = True
+    instability_detected: bool = False
+    contamination_spreading: bool = False
+    energy_unsustainable: bool = False
+    terrain_degrading: bool = False
+    survivability_decreasing_over_time: bool = False
+
+    def recommend_stay(self) -> bool:
+        stay_conditions = [
+            self.structure_stable,
+            self.contamination_manageable,
+            self.power_sustainable,
+            self.mobility_routes_open,
+            self.expansion_possible,
+        ]
+        relocate_conditions = [
+            self.instability_detected,
+            self.contamination_spreading,
+            self.energy_unsustainable,
+            self.terrain_degrading,
+            self.survivability_decreasing_over_time,
+        ]
+        return all(stay_conditions) and not any(relocate_conditions)
+
+    def recommendation(self) -> str:
+        return "STAY_AT_GROUND_ZERO" if self.recommend_stay() else "RELOCATE_HQ_REVIEW"
+
+
+@dataclass
+class ActionRequest:
+    actor_id: str
+    action_type: ActionType
+    target_role: Optional[Role] = None
+    justification: str = ""
+    estimated_power_cost: float = 0.0
+    estimated_material_cost: float = 0.0
+    estimated_survival_gain: float = 0.0
+    mission_phase: int = 0
+    metadata: Dict[str, str] = field(default_factory=dict)
+
+
+@dataclass
+class ActionResult:
+    approved: bool
+    reason: str
+    logged_at: float = field(default_factory=time.time)
+
+
+@dataclass
+class TrustRecord:
+    entity_id: str
+    state: TrustState = TrustState.VERIFIED
+    signals: Set[ThreatSignal] = field(default_factory=set)
+    anomaly_count: int = 0
+    restricted_reason: str = ""
+    last_updated: float = field(default_factory=time.time)
+
+    def add_signal(self, signal: ThreatSignal) -> None:
+        self.signals.add(signal)
+        self.anomaly_count += 1
+        self.last_updated = time.time()
+
+    def clear_signals(self) -> None:
+        self.signals.clear()
+        self.anomaly_count = 0
+        self.restricted_reason = ""
+        self.last_updated = time.time()
+
+
+# ============================================================
+# DOCTRINE ENGINE
+# ============================================================
+
+@dataclass
+class DoctrineEngine:
+    immutable_core: ImmutableCore
+    adaptive_layer: AdaptiveLayer
+    resources: SystemResources
+    expansion_caps: ExpansionCaps
+    ground_zero_status: GroundZeroStatus
+    mode: SystemMode = SystemMode.LOCKDOWN
+    trust_registry: Dict[str, TrustRecord] = field(default_factory=dict)
+    action_log: List[str] = field(default_factory=list)
+    mission_phase: int = 0
+
+    def log(self, message: str) -> None:
+        stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        self.action_log.append(f"[{stamp}] {message}")
+
+    def set_mode(self, new_mode: SystemMode) -> None:
+        self.mode = new_mode
+        self.log(f"Mode changed to {new_mode.name}")
+
+    def register_entity(self, entity_id: str, trusted: bool = False) -> None:
+        state = TrustState.TRUSTED if trusted else TrustState.VERIFIED
+        self.trust_registry[entity_id] = TrustRecord(entity_id=entity_id, state=state)
+        self.log(f"Registered entity {entity_id} with trust state {state.name}")
+
+    def get_trust_record(self, entity_id: str) -> TrustRecord:
+        if entity_id not in self.trust_registry:
+            self.register_entity(entity_id, trusted=False)
+        return self.trust_registry[entity_id]
+
+    def add_threat_signal(
+        self,
+        entity_id: str,
+        signal: ThreatSignal,
+        immediate_catastrophic_threat: bool = False
+    ) -> TrustState:
+        record = self.get_trust_record(entity_id)
+        record.add_signal(signal)
+
+        if immediate_catastrophic_threat:
+            record.state = TrustState.HOSTILE
+            self.log(f"{entity_id} escalated immediately to HOSTILE due to catastrophic threat")
+            return record.state
+
+        independent_signals = len(record.signals)
+
+        if independent_signals == 1 and record.state in {TrustState.TRUSTED, TrustState.VERIFIED}:
+            record.state = TrustState.UNCERTAIN
+            self.log(f"{entity_id} moved to UNCERTAIN")
+        elif independent_signals >= 2 and record.state == TrustState.UNCERTAIN:
+            record.state = TrustState.RESTRICTED
+            record.restricted_reason = "Multi-signal threat confirmation reached"
+            self.log(f"{entity_id} moved to RESTRICTED")
+        elif independent_signals >= 3:
+            record.state = TrustState.HOSTILE
+            record.restricted_reason = "Confirmed hostile pattern"
+            self.log(f"{entity_id} moved to HOSTILE")
+
+        return record.state
+
+    def reintegrate_entity(self, entity_id: str, human_clearance: bool = False) -> bool:
+        record = self.get_trust_record(entity_id)
+        if not human_clearance:
+            self.log(f"Reintegration denied for {entity_id}: human clearance required")
+            return False
+        record.clear_signals()
+        record.state = TrustState.VERIFIED
+        self.log(f"{entity_id} reintegrated to VERIFIED")
+        return True
+
+    def should_enter_safe_mode(self) -> bool:
+        uncertain_or_worse = sum(
+            1 for r in self.trust_registry.values()
+            if r.state in {TrustState.UNCERTAIN, TrustState.RESTRICTED, TrustState.HOSTILE}
+        )
+        low_life_support = (
+            self.resources.air < 25
+            or self.resources.water < 25
+            or self.resources.medical_reserve < 20
+        )
+        return uncertain_or_worse >= 3 or low_life_support
+
+    def enter_safe_mode(self) -> None:
+        self.set_mode(SystemMode.SAFE_MODE)
+        self.log("Safe Mode Activation: expansion halted, movement restricted, critical cores protected")
+
+    def enter_conservation_mode(self) -> None:
+        self.set_mode(SystemMode.CONSERVATION)
+        self.log("Conservation Mode: non-essential robots should deactivate")
+
+    def ground_zero_recommendation(self) -> str:
+        decision = self.ground_zero_status.recommendation()
+        self.log(f"Ground Zero recommendation: {decision}")
+        return decision
+
+    def system_stability_ok(self) -> bool:
+        # Abstract stability rule:
+        # The system must never consume more than it preserves.
+        preserved = (
+            self.resources.air
+            + self.resources.water
+            + self.resources.medical_reserve
+            + self.resources.biosustainment_reserve
+        )
+        consumed_risk = max(0.0, 100.0 - self.resources.power) + max(0.0, 100.0 - self.resources.materials)
+        return preserved >= consumed_risk
+
+    def gate_survival_impact(self, request: ActionRequest) -> Tuple[bool, str]:
+        if request.action_type == ActionType.BUILD_ROBOT and request.estimated_survival_gain <= 0:
+            return False, "Denied at Gate 1: no survival gain"
+        if request.action_type in {
+            ActionType.ENTER_SAFE_MODE,
+            ActionType.ENTER_CONSERVATION,
+            ActionType.CONTAIN_ENTITY,
+            ActionType.ISOLATE_COMPARTMENT,
+            ActionType.REPAIR,
+            ActionType.PATCH_BREACH,
+            ActionType.REROUTE_POWER,
+            ActionType.MEDICAL_ASSIST,
+            ActionType.ASSESS_TERRAIN,
+            ActionType.REQUEST_RELOCATION_REVIEW,
+        }:
+            return True, "Gate 1 passed"
+        if request.estimated_survival_gain < 0:
+            return False, "Denied at Gate 1: negative survival impact"
+        return True, "Gate 1 passed"
+
+    def gate_resource_validity(self, request: ActionRequest) -> Tuple[bool, str]:
+        if self.expansion_caps.life_support_priority_absolute:
+            if self.resources.air < 20 or self.resources.water < 20 or self.resources.medical_reserve < 15:
+                if request.action_type == ActionType.BUILD_ROBOT:
+                    return False, "Denied at Gate 2: life support reserves too low for fabrication"
+
+        if self.resources.power < request.estimated_power_cost:
+            return False, "Denied at Gate 2: insufficient power"
+        if self.resources.materials < request.estimated_material_cost:
+            return False, "Denied at Gate 2: insufficient materials"
+
+        if request.action_type == ActionType.BUILD_ROBOT:
+            if self.resources.power < self.expansion_caps.power_minimum_for_fabrication:
+                return False, "Denied at Gate 2: below power minimum for fabrication"
+            if self.resources.materials < self.expansion_caps.materials_minimum_for_fabrication:
+                return False, "Denied at Gate 2: below material minimum for fabrication"
+
+        if not self.system_stability_ok() and request.action_type == ActionType.BUILD_ROBOT:
+            return False, "Denied at Gate 2: system stability rule failed"
+
+        return True, "Gate 2 passed"
+
+    def gate_doctrine_compliance(
+        self,
+        actor: "RobotUnit",
+        request: ActionRequest,
+        robot_count: int
+    ) -> Tuple[bool, str]:
+        if request.action_type == ActionType.BUILD_ROBOT:
+            if self.mode == SystemMode.LOCKDOWN:
+                return False, "Denied at Gate 3: no expansion allowed during LOCKDOWN"
+            if self.mode == SystemMode.SAFE_MODE:
+                return False, "Denied at Gate 3: no expansion allowed during SAFE_MODE"
+            if robot_count >= self.expansion_caps.max_active_robots_per_phase:
+                return False, "Denied at Gate 3: active robot cap reached"
+
+            # Authority rules
+            if actor.role == Role.HQ:
+                return True, "Gate 3 passed"
+            if actor.role == Role.ROBOT_A_RECOVERY:
+                # Robot A can execute but not independently authorize beyond phase 1 behavior.
+                return False, "Denied at Gate 3: Robot A cannot self-authorize build actions"
+            return False, "Denied at Gate 3: only HQ can authorize build actions"
+
+        if actor.role != Role.HQ and request.action_type in {
+            ActionType.ENTER_SAFE_MODE,
+            ActionType.ENTER_CONSERVATION,
+        }:
+            return False, "Denied at Gate 3: only HQ may change global system mode"
+
+        return True, "Gate 3 passed"
+
+    def validate_action(
+        self,
+        actor: "RobotUnit",
+        request: ActionRequest,
+        robot_count: int
+    ) -> ActionResult:
+        checks = [
+            self.gate_survival_impact(request),
+            self.gate_resource_validity(request),
+            self.gate_doctrine_compliance(actor, request, robot_count),
+        ]
+        for ok, reason in checks:
+            if not ok:
+                self.log(f"Action denied for {actor.unit_id}: {reason}")
+                return ActionResult(approved=False, reason=reason)
+        self.log(f"Action approved for {actor.unit_id}: {request.action_type.name}")
+        return ActionResult(approved=True, reason="All gates passed")
+
+    def consume_resources(self, request: ActionRequest) -> None:
+        self.resources.power = max(0.0, self.resources.power - request.estimated_power_cost)
+        self.resources.materials = max(0.0, self.resources.materials - request.estimated_material_cost)
+
+    def automatic_health_checks(self) -> None:
+        if self.should_enter_safe_mode():
+            self.enter_safe_mode()
+        elif not self.system_stability_ok():
+            self.enter_conservation_mode()
+
+    def containment_response(self, entity_id: str) -> None:
+        self.log(
+            f"Containment order for {entity_id}: "
+            "CONTAIN -> CONTROL -> STABILIZE -> RESOLVE"
+        )
+
+    def summary(self) -> Dict[str, object]:
+        return {
+            "mode": self.mode.name,
+            "mission_phase": self.mission_phase,
+            "ground_zero_recommendation": self.ground_zero_status.recommendation(),
+            "resources": self.resources.snapshot(),
+            "stability_ok": self.system_stability_ok(),
+            "trust_states": {
+                entity_id: record.state.name
+                for entity_id, record in self.trust_registry.items()
+            },
+            "log_entries": len(self.action_log),
+        }
+
+
+# ============================================================
+# ROBOT UNITS
+# ============================================================
+
+@dataclass
+class RobotUnit:
+    unit_id: str
+    role: Role
+    doctrine_engine: DoctrineEngine
+    authority_level: str
+    active: bool = True
+
+    def receive_task(self, request: ActionRequest, active_robot_count: int) -> ActionResult:
+        if not self.active:
+            return ActionResult(approved=False, reason=f"{self.unit_id} is inactive")
+
+        self.doctrine_engine.log(f"{self.unit_id} received task {request.action_type.name}")
+        result = self.doctrine_engine.validate_action(self, request, active_robot_count)
+
+        if result.approved:
+            self.execute(request)
+        else:
+            self.report(result.reason)
+
+        return result
+
+    def execute(self, request: ActionRequest) -> None:
+        self.doctrine_engine.consume_resources(request)
+        self.doctrine_engine.log(
+            f"{self.unit_id} executed {request.action_type.name} "
+            f"(power_cost={request.estimated_power_cost}, material_cost={request.estimated_material_cost})"
+        )
+        self.report(f"Executed {request.action_type.name}")
+
+    def report(self, message: str) -> None:
+        self.doctrine_engine.log(f"{self.unit_id} report: {message}")
+
+    def behavior_loop(
+        self,
+        request: ActionRequest,
+        active_robot_count: int
+    ) -> ActionResult:
+        # 1. Receive task
+        # 2. Check doctrine
+        # 3. Check resources
+        # 4. Execute if valid
+        # 5. Report back
+        # 6. Await next instruction
+        return self.receive_task(request, active_robot_count)
+
+
+@dataclass
+class HQPlatform(RobotUnit):
+    def approve_build_request(
+        self,
+        builder: RobotUnit,
+        target_role: Role,
+        active_robot_count: int,
+        estimated_power_cost: float,
+        estimated_material_cost: float,
+        estimated_survival_gain: float,
+        justification: str
+    ) -> ActionResult:
+        request = ActionRequest(
+            actor_id=self.unit_id,
+            action_type=ActionType.BUILD_ROBOT,
+            target_role=target_role,
+            justification=justification,
+            estimated_power_cost=estimated_power_cost,
+            estimated_material_cost=estimated_material_cost,
+            estimated_survival_gain=estimated_survival_gain,
+            mission_phase=self.doctrine_engine.mission_phase,
+        )
+
+        # HQ authorizes
+        result = self.receive_task(request, active_robot_count)
+
+        # If approved, Robot A or another executor can proceed as the fabricator/operator
+        if result.approved:
+            self.doctrine_engine.log(
+                f"HQ approved construction of {target_role.name}; executor={builder.unit_id}"
+            )
+        return result
+
+    def human_override(self, reason: str) -> None:
+        self.doctrine_engine.log(f"HUMAN OVERRIDE: {reason}")
+
+
+# ============================================================
+# IRON HAVEN SYSTEM
+# ============================================================
+
+@dataclass
+class IronHavenSystem:
+    doctrine: DoctrineEngine
+    hq: HQPlatform
+    robots: Dict[str, RobotUnit] = field(default_factory=dict)
+
+    def register_robot(self, robot: RobotUnit) -> None:
+        self.robots[robot.unit_id] = robot
+        self.doctrine.register_entity(robot.unit_id, trusted=True)
+        self.doctrine.log(f"Robot registered: {robot.unit_id} ({robot.role.name})")
+
+    def active_robot_count(self) -> int:
+        return sum(1 for r in self.robots.values() if r.active)
+
+    def can_expand(self) -> bool:
+        return (
+            self.doctrine.mode not in {SystemMode.LOCKDOWN, SystemMode.SAFE_MODE}
+            and self.active_robot_count() < self.doctrine.expansion_caps.max_active_robots_per_phase
+        )
+
+    def build_robot(
+        self,
+        executor_robot_id: str,
+        new_unit_id: str,
+        target_role: Role,
+        estimated_power_cost: float,
+        estimated_material_cost: float,
+        estimated_survival_gain: float,
+        justification: str
+    ) -> ActionResult:
+        executor = self.robots.get(executor_robot_id)
+        if executor is None:
+            return ActionResult(False, f"Executor robot {executor_robot_id} not found")
+
+        approval = self.hq.approve_build_request(
+            builder=executor,
+            target_role=target_role,
+            active_robot_count=self.active_robot_count(),
+            estimated_power_cost=estimated_power_cost,
+            estimated_material_cost=estimated_material_cost,
+            estimated_survival_gain=estimated_survival_gain,
+            justification=justification,
+        )
+
+        if not approval.approved:
+            return approval
+
+        new_robot = RobotUnit(
+            unit_id=new_unit_id,
+            role=target_role,
+            doctrine_engine=self.doctrine,
+            authority_level="TASK_SPECIFIC",
+        )
+
+        self.register_robot(new_robot)
+        self.doctrine.log(f"New robot constructed: {new_unit_id} as {target_role.name}")
+        return ActionResult(True, f"Robot {new_unit_id} constructed as {target_role.name}")
+
+    def process_threat(
+        self,
+        entity_id: str,
+        signals: List[ThreatSignal],
+        immediate_catastrophic_threat: bool = False
+    ) -> TrustState:
+        final_state = TrustState.VERIFIED
+        for idx, signal in enumerate(signals):
+            final_state = self.doctrine.add_threat_signal(
+                entity_id=entity_id,
+                signal=signal,
+                immediate_catastrophic_threat=(immediate_catastrophic_threat and idx == 0),
+            )
+
+        if final_state == TrustState.HOSTILE:
+            self.doctrine.containment_response(entity_id)
+
+        self.doctrine.automatic_health_checks()
+        return final_state
+
+    def shift_phase(self, phase: int, mode: Optional[SystemMode] = None) -> None:
+        self.doctrine.mission_phase = phase
+        self.doctrine.log(f"Mission phase shifted to {phase}")
+        if mode is not None:
+            self.doctrine.set_mode(mode)
+
+    def robot_role_response_under_threat(self) -> Dict[str, str]:
+        responses = {}
+        for unit_id, robot in self.robots.items():
+            if robot.role == Role.ROBOT_A_RECOVERY:
+                responses[unit_id] = "damage control / structural sealing"
+            elif robot.role == Role.ROBOT_B_UTILITY:
+                responses[unit_id] = "power rerouting / system stabilization"
+            elif robot.role == Role.ROBOT_C_HABITAT:
+                responses[unit_id] = "zone isolation / compartment reinforcement"
+            elif robot.role == Role.ROBOT_D_TERRAIN:
+                responses[unit_id] = "evacuation path preparation / terrain assessment"
+            elif robot.role == Role.ROBOT_E_PRECISION:
+                responses[unit_id] = "medical assistance / internal restricted logistics"
+            elif robot.role == Role.HQ:
+                responses[unit_id] = "supreme command / authorization / life-priority enforcement"
+        return responses
+
+
+# ============================================================
+# DEFAULT SYSTEM FACTORY
+# ============================================================
+
+def create_default_iron_haven() -> IronHavenSystem:
+    immutable = ImmutableCore(
+        mission_priority_order=(
+            MissionPriority.PREVENT_PLATFORM_DESTRUCTION,
+            MissionPriority.PRESERVE_INTERNAL_LIFE,
+            MissionPriority.MAINTAIN_ENVIRONMENTAL_CONTROL,
+            MissionPriority.MAINTAIN_MOBILITY,
+            MissionPriority.MAINTAIN_MEDICAL_CAPABILITY,
+            MissionPriority.REPAIR_SELF_AND_SURROUNDINGS,
+            MissionPriority.DEFEND_AND_WITHDRAW,
+        ),
+        survivability_law="life > platform > expansion",
+        expansion_constraints="No uncontrolled replication or growth",
+        ground_zero_rule="Stay if stable/manageable/sustainable/open/expandable, relocate if degrading",
+        human_override_authority=True,
+    )
+    immutable.validate_constitution()
+
+    adaptive = AdaptiveLayer()
+    resources = SystemResources(
+        power=100.0,
+        materials=100.0,
+        water=100.0,
+        air=100.0,
+        medical_reserve=100.0,
+        biosustainment_reserve=100.0,
+    )
+    caps = ExpansionCaps()
+    ground_zero = GroundZeroStatus()
+
+    doctrine = DoctrineEngine(
+        immutable_core=immutable,
+        adaptive_layer=adaptive,
+        resources=resources,
+        expansion_caps=caps,
+        ground_zero_status=ground_zero,
+        mode=SystemMode.LOCKDOWN,
+    )
+
+    hq = HQPlatform(
+        unit_id="HQ-PLATFORM",
+        role=Role.HQ,
+        doctrine_engine=doctrine,
+        authority_level="SUPREME",
+    )
+
+    system = IronHavenSystem(doctrine=doctrine, hq=hq)
+    doctrine.register_entity("HQ-PLATFORM", trusted=True)
+
+    # Initial Robot A, allowed as first external recovery constructor
+    robot_a = RobotUnit(
+        unit_id="ROBOT-A",
+        role=Role.ROBOT_A_RECOVERY,
+        doctrine_engine=doctrine,
+        authority_level="FIELD_EXECUTION",
+    )
+    system.register_robot(robot_a)
+
+    return system
+
+
+# ============================================================
+# DEMO / EXAMPLE
+# ============================================================
+
+if __name__ == "__main__":
+    haven = create_default_iron_haven()
+
+    # Shift from lockdown into operational mode after stabilization
+    haven.shift_phase(1, SystemMode.NORMAL)
+
+    # Ground Zero recommendation
+    print("Ground Zero:", haven.doctrine.ground_zero_recommendation())
+
+    # Build Robot B through HQ approval + Robot A execution chain
+    result_build_b = haven.build_robot(
+        executor_robot_id="ROBOT-A",
+        new_unit_id="ROBOT-B",
+        target_role=Role.ROBOT_B_UTILITY,
+        estimated_power_cost=10.0,
+        estimated_material_cost=12.0,
+        estimated_survival_gain=20.0,
+        justification="Improve utility stamina, support power routing, water setup, filtration transport",
+    )
+    print("Build Robot B:", result_build_b.approved, "-", result_build_b.reason)
+
+    # Simulate threat escalation for an entity
+    haven.doctrine.register_entity("EXTERNAL-UNIT-1", trusted=False)
+    state = haven.process_threat(
+        entity_id="EXTERNAL-UNIT-1",
+        signals=[
+            ThreatSignal.UNAUTHORIZED_ACCESS_ATTEMPT,
+            ThreatSignal.REPEATED_RESTRICTED_BOUNDARY_VIOLATION,
+            ThreatSignal.COMMAND_OVERRIDE_ATTEMPT,
+        ],
+    )
+    print("Threat state:", state.name)
+
+    # Example robot task
+    robot_b = haven.robots.get("ROBOT-B")
+    if robot_b:
+        task_result = robot_b.behavior_loop(
+            ActionRequest(
+                actor_id="ROBOT-B",
+                action_type=ActionType.REROUTE_POWER,
+                justification="Stabilize internal power under elevated uncertainty",
+                estimated_power_cost=2.0,
+                estimated_material_cost=0.0,
+                estimated_survival_gain=8.0,
+                mission_phase=haven.doctrine.mission_phase,
+            ),
+            active_robot_count=haven.active_robot_count(),
+        )
+        print("Robot B task:", task_result.approved, "-", task_result.reason)
+
+    # Show role response doctrine
+    print("Threat role responses:")
+    for unit_id, response in haven.robot_role_response_under_threat().items():
+        print(f"  {unit_id}: {response}")
+
+    # Show summary
+    print("\nSystem Summary:")
+    for key, value in haven.doctrine.summary().items():
+        print(f"{key}: {value}")
+
+    print("\nRecent Log:")
+    for line in haven.doctrine.action_log[-10:]:
+        print(line)
