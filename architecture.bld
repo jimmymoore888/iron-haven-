@@ -1,0 +1,70 @@
+iron-haven/
+│
+├── README.md
+│
+├── /core-law/
+│   ├── CORE_LAW.md
+│   ├── SURVIVAL_LAW.md
+│   ├── EXPANSION_LAW.md
+│   ├── RECOVERY_LAW.md
+│   └── TRUST_LAW.md
+│
+├── /trust-doctrine/
+│   ├── DTD_OVERVIEW.md
+│   ├── TRUST_STATES.md
+│   ├── ESCALATION_RULES.md
+│   ├── CONTAINMENT_PROTOCOL.md
+│   ├── SAFE_MODE.md
+│   └── REINTEGRATION_PROTOCOL.md
+│
+├── /embedded-doctrine/
+│   ├── EDS_ARCHITECTURE.md
+│   ├── IMMUTABLE_CORE.md
+│   ├── ADAPTIVE_LAYER.md
+│   ├── COMMAND_LAYER.md
+│   └── DECISION_GATES.md
+│
+├── /robot-chain/
+│   ├── OVERVIEW.md
+│   ├── ROBOT_A_RECOVERY.md
+│   ├── ROBOT_B_UTILITY.md
+│   ├── ROBOT_C_HABITAT.md
+│   ├── ROBOT_D_TERRAIN.md
+│   ├── ROBOT_E_PRECISION.md
+│   └── BEHAVIOR_MODEL.md
+│
+├── /recovery-system/
+│   ├── AUTONOMOUS_RECOVERY_CASCADE.md
+│   ├── PHASE_0_LOCKDOWN.md
+│   ├── PHASE_1_TO_5.md
+│   ├── GROUND_ZERO_RULE.md
+│   ├── RELOCATION_LOGIC.md
+│   └── FORTRESS_VS_MOBILE_MODE.md
+│
+├── /defense-architecture/
+│   ├── PASSIVE_DEFENSE.md
+│   ├── ACTIVE_DEFENSE.md
+│   ├── DAMAGE_SURVIVAL.md
+│   ├── INTERNAL_THREAT_MODEL.md
+│   └── CONTAINMENT_LAYOUT.md
+│
+├── /biosurvival/
+│   ├── HUMAN_SURVIVAL.md
+│   ├── MEDICAL_CORE.md
+│   ├── ANIMAL_SYSTEM.md
+│   ├── PLANT_SYSTEM.md
+│   └── LIFE_CONTINUITY.md
+│
+├── /system-control/
+│   ├── HQ_AUTHORITY.md
+│   ├── COMMAND_HIERARCHY.md
+│   ├── OVERRIDE_RULES.md
+│   ├── RESOURCE_MANAGEMENT.md
+│   └── EXPANSION_CAPS.md
+│
+└── /diagrams/
+    ├── COMMAND_FLOW.md
+    ├── TRUST_STATE_FLOW.md
+    ├── ROBOT_CHAIN_FLOW.md
+    ├── RESOURCE_FLOW.md
+    └── SURVIVABILITY_MODEL.md
